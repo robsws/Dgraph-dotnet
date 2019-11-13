@@ -50,9 +50,17 @@ namespace DgraphDotNet.Transactions {
                 var err = MergeContext(queryResponse.Txn);
 
                 if (err.IsSuccess) {
-                    return Results.Ok<string>(queryResponse.Json.ToStringUtf8());
+                    return Results.Ok<string>(queryResponse.Json.ToStringUtf8()).WithSuccess(new Success("Success")
+                        .WithMetadata("parsing_ns", queryResponse.Latency.ParsingNs)
+                        .WithMetadata("processing_ns", queryResponse.Latency.ProcessingNs)
+                        .WithMetadata("encoding_ns", queryResponse.Latency.EncodingNs)
+                    );
                 } else {
-                    return err.ToResult<string>();
+                    return err.ToResult<string>().WithError(new Error("Error")
+                        .WithMetadata("parsing_ns", queryResponse.Latency.ParsingNs)
+                        .WithMetadata("processing_ns", queryResponse.Latency.ProcessingNs)
+                        .WithMetadata("encoding_ns", queryResponse.Latency.EncodingNs)
+                    );;
                 }
 
             } catch (RpcException rpcEx) {
